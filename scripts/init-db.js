@@ -2,15 +2,13 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 require('dotenv').config({ path: '.env.local' });
 
-const DEFAULT_DATABASE_URL =
-  'postgresql://neondb_owner:npg_whaHblM2KS4W@ep-misty-wildflower-ao71df7d-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
-
-const connectionString = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '')
-  ? process.env.DATABASE_URL
-  : DEFAULT_DATABASE_URL;
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL is not set. Please ensure it is present in .env.local');
+  process.exit(1);
+}
 
 const pool = new Pool({
-  connectionString,
+  connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false,
   },

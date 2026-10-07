@@ -5,17 +5,12 @@ const globalForPg = globalThis as unknown as {
   schemaEnsured: boolean | undefined;
 };
 
-const DEFAULT_DATABASE_URL =
-  'postgresql://neondb_owner:npg_whaHblM2KS4W@ep-misty-wildflower-ao71df7d-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
-
-const connectionString = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '')
-  ? process.env.DATABASE_URL
-  : DEFAULT_DATABASE_URL;
+const connectionString = process.env.DATABASE_URL;
 
 export const pool =
   globalForPg.pgPool ??
   new Pool({
-    connectionString,
+    connectionString: connectionString || undefined,
     ssl: {
       rejectUnauthorized: false,
     },
@@ -25,6 +20,10 @@ if (process.env.NODE_ENV !== 'production') globalForPg.pgPool = pool;
 
 export async function ensureSchema() {
   if (globalForPg.schemaEnsured) return;
+  if (!connectionString) {
+    console.warn('Cannot ensure schema: DATABASE_URL environment variable is missing.');
+    return;
+  }
   globalForPg.schemaEnsured = true;
 
   try {
@@ -93,6 +92,9 @@ export async function ensureSchema() {
 }
 
 export async function query(text: string, params?: any[]) {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is not set. Please add it to your Environment Variables.');
+  }
   await ensureSchema();
   const start = Date.now();
   const res = await pool.query(text, params);

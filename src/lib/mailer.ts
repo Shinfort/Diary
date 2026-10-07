@@ -1,19 +1,24 @@
 import nodemailer from 'nodemailer';
 
-const SMTP_EMAIL = process.env.SMTP_EMAIL || 'p.utari087@gmail.com';
-const SMTP_PASSWORD = (process.env.SMTP_PASSWORD || 'jpuv qmqd wlcc njis').replace(/\s+/g, '');
-
 export async function sendVerificationEmail(
   toEmail: string,
   name: string,
   verificationUrl: string
 ): Promise<{ success: boolean; error?: string }> {
+  const smtpEmail = process.env.SMTP_EMAIL || '';
+  const smtpPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
+
+  if (!smtpEmail || !smtpPassword) {
+    console.warn('SMTP credentials (SMTP_EMAIL / SMTP_PASSWORD) are not configured in environment variables.');
+    return { success: false, error: 'SMTP credentials not configured' };
+  }
+
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: SMTP_EMAIL,
-        pass: SMTP_PASSWORD,
+        user: smtpEmail,
+        pass: smtpPassword,
       },
       tls: {
         rejectUnauthorized: false,
@@ -55,7 +60,7 @@ export async function sendVerificationEmail(
     `;
 
     await transporter.sendMail({
-      from: `"Personal Diary" <${SMTP_EMAIL}>`,
+      from: `"Personal Diary" <${smtpEmail}>`,
       to: toEmail,
       subject: 'Verifikasi Akun Personal Diary Anda - Aktifkan 5GB Penyimpanan',
       html: htmlContent,
