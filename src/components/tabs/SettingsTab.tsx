@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, LogOut, UserCheck, Mail, ShieldCheck, HardDrive, CheckCircle } from 'lucide-react';
+import { Settings, LogOut, UserCheck, Mail, ShieldCheck, HardDrive, CheckCircle, Palette, Sparkles } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
+import { KuromiIcon, MikuIcon } from '@/components/KuromiMikuCharacters';
 
 export default function SettingsTab({ isAdmin }: { isAdmin: boolean }) {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [user, setUser] = useState<{ 
     id: number; 
     name: string; 
@@ -77,6 +80,96 @@ export default function SettingsTab({ isAdmin }: { isAdmin: boolean }) {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ShieldCheck size={16} style={{ color: 'var(--accent)' }} /> <strong>Hak Akses:</strong> {user?.role === 'admin' ? 'Administrator' : 'Pengguna Terverifikasi'}
             </p>
+          </div>
+        </div>
+
+        {/* Theme Customization Card */}
+        <div style={{ padding: '24px', backgroundColor: 'var(--card-bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Palette size={18} style={{ color: 'var(--accent)' }} /> Tema Tampilan Jurnal
+            </h3>
+            {theme === 'kuromi-miku' && (
+              <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#ec4899', backgroundColor: '#fce7f3', padding: '3px 10px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Sparkles size={12} /> Kuromi & Miku Aktif
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+            Pilih nuansa warna tampilan jurnal harian sesuai dengan suasana hatimu.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+            {/* Theme 1: Klasik */}
+            <div
+              onClick={() => setTheme('classic')}
+              style={{
+                border: `2px solid ${theme === 'classic' ? 'var(--accent)' : 'var(--border)'}`,
+                borderRadius: '10px',
+                padding: '16px',
+                cursor: 'pointer',
+                backgroundColor: theme === 'classic' ? 'rgba(45, 106, 79, 0.04)' : 'var(--card-bg)',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '1.4rem' }}>🌿</span>
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--foreground)' }}>Tema Klasik</h4>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Default warm paper</span>
+                  </div>
+                </div>
+                {theme === 'classic' && <CheckCircle size={18} style={{ color: 'var(--accent)' }} />}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: '0 0 12px 0' }}>
+                Palet kertas hangat minimalis berpadu aksen hijau daun yang tenang.
+              </p>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#fcfbf9', border: '1px solid #dcdad6' }} />
+                <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#1a1a1a' }} />
+                <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#2d6a4f' }} />
+              </div>
+            </div>
+
+            {/* Theme 2: Kuromi & Miku */}
+            <div
+              onClick={() => setTheme('kuromi-miku')}
+              style={{
+                border: `2px solid ${theme === 'kuromi-miku' ? '#ec4899' : 'var(--border)'}`,
+                borderRadius: '10px',
+                padding: '16px',
+                cursor: 'pointer',
+                backgroundColor: theme === 'kuromi-miku' ? 'rgba(236, 72, 153, 0.05)' : 'var(--card-bg)',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+                boxShadow: theme === 'kuromi-miku' ? '0 4px 16px rgba(124, 58, 237, 0.12)' : 'none',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <KuromiIcon size={26} />
+                  <MikuIcon size={26} />
+                  <div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: theme === 'kuromi-miku' ? '#7c3aed' : 'var(--foreground)' }}>
+                      Kuromi & Miku
+                    </h4>
+                    <span style={{ fontSize: '0.75rem', color: '#ec4899', fontWeight: '600' }}>Ungu & Pink Ceria</span>
+                  </div>
+                </div>
+                {theme === 'kuromi-miku' && <CheckCircle size={18} style={{ color: '#ec4899' }} />}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: '0 0 12px 0' }}>
+                Nuansa ungu lavender dengan sentuhan pink manis serta karakter Kuromi 🖤 & Hatsune Miku 🎵!
+              </p>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#faf5ff', border: '1px solid #edd5f8' }} />
+                <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#7c3aed' }} />
+                <span style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#ec4899' }} />
+                <span style={{ fontSize: '0.75rem', color: '#ec4899', fontWeight: '600', marginLeft: '4px' }}>✨ Edisi Spesial</span>
+              </div>
+            </div>
           </div>
         </div>
 

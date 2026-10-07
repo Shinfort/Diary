@@ -6,6 +6,8 @@ import EntriesTab from '@/components/tabs/EntriesTab';
 import WriteTab from '@/components/tabs/WriteTab';
 import SettingsTab from '@/components/tabs/SettingsTab';
 import FinanceTab from '@/components/tabs/FinanceTab';
+import ThemeToggle from '@/components/ThemeToggle';
+import KuromiMikuBanner from '@/components/KuromiMikuBanner';
 import { BookOpen, PenTool, Settings, Wallet, UserCheck, Shield, HardDrive } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -60,6 +62,9 @@ export default function AdminDashboard() {
           </p>
         </div>
       </div>
+
+      {/* Kuromi & Miku Mascot Banner (visible when theme is active) */}
+      <KuromiMikuBanner />
 
       <nav style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <button 
@@ -157,6 +162,9 @@ export default function AdminDashboard() {
           <div style={{ width: `${percentage}%`, height: '100%', backgroundColor: 'var(--accent)', borderRadius: '3px', transition: 'width 0.3s ease' }} />
         </div>
       </div>
+
+      {/* Theme Switcher */}
+      <ThemeToggle variant="sidebar" />
     </div>
   );
 

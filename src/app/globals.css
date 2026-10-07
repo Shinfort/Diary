@@ -20,6 +20,47 @@
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Tema Kuromi & Miku: Ungu Memikat dengan Sentuhan Pink Ceria */
+[data-theme="kuromi-miku"],
+body[data-theme="kuromi-miku"] {
+  --background: #faf5ff;          /* Dreamy lilac paper */
+  --foreground: #2d124d;          /* Deep rich Kuromi violet */
+  --primary: #7c3aed;             /* Vivid royal purple */
+  --primary-hover: #6d28d9;       /* Deep purple hover */
+  --accent: #ec4899;              /* Cute Kuromi skull & Miku idol pink */
+  --accent-hover: #db2777;        /* Bright magenta pink hover */
+  --accent-light: #fce7f3;        /* Soft blush pink badge/pill */
+  --card-bg: #ffffff;             /* Crisp clean card background */
+  --border: #edd5f8;              /* Soft lilac purple border */
+  --text-muted: #7e5aa2;          /* Pastel violet grey for secondary text */
+  --shadow-sm: 0 2px 6px rgba(124, 58, 237, 0.06);
+  --shadow-md: 0 8px 24px rgba(124, 58, 237, 0.1);
+  --shadow-lg: 0 16px 36px rgba(236, 72, 153, 0.14);
+}
+
+[data-theme="kuromi-miku"] body,
+body[data-theme="kuromi-miku"] {
+  background: 
+    radial-gradient(circle at 10% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 90% 85%, rgba(124, 58, 237, 0.08) 0%, transparent 45%),
+    #faf5ff;
+  background-attachment: fixed;
+}
+
+[data-theme="kuromi-miku"] ::selection {
+  background: #fbcfe8;
+  color: #701a75;
+}
+
+[data-theme="kuromi-miku"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c084fc, #f472b6);
+  border-radius: 10px;
+}
+
+[data-theme="kuromi-miku"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a855f7, #ec4899);
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

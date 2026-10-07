@@ -5,6 +5,8 @@ import Link from 'next/link';
 import DiaryBook from '@/components/DiaryBook';
 import EntriesTab from '@/components/tabs/EntriesTab';
 import FinanceTab from '@/components/tabs/FinanceTab';
+import ThemeToggle from '@/components/ThemeToggle';
+import KuromiMikuBanner from '@/components/KuromiMikuBanner';
 import { BookOpen, Wallet, LogIn, LayoutDashboard } from 'lucide-react';
 
 export default function Home() {
@@ -39,6 +41,9 @@ export default function Home() {
           Ruang tenang untuk catatan harian, kenangan foto & video, serta pembukuan keuangan.
         </p>
       </div>
+
+      {/* Kuromi & Miku Mascot Banner (visible when theme is active) */}
+      <KuromiMikuBanner />
 
       {/* Navigation Tabs */}
       <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -128,6 +133,9 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Theme Switcher */}
+      <ThemeToggle variant="sidebar" />
     </div>
   );
 
