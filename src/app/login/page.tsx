@@ -14,6 +14,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [verificationLink, setVerificationLink] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -22,6 +23,7 @@ export default function Login() {
     setError('');
     setMessage('');
     setVerificationLink('');
+    setTempPassword('');
     setLoading(true);
 
     try {
@@ -82,6 +84,9 @@ export default function Login() {
         const data = await res.json();
         if (res.ok) {
           setMessage(data.message || 'Instruksi reset telah dikirim ke email.');
+          if (data.tempPassword) {
+            setTempPassword(data.tempPassword);
+          }
         } else {
           setError(data.error || 'Gagal memproses permintaan.');
         }
@@ -146,6 +151,73 @@ export default function Login() {
         {message && (
           <div className={styles.success}>
             <p>{message}</p>
+            {tempPassword && (
+              <div style={{ marginTop: '14px', background: '#fdf6e2', padding: '14px', borderRadius: '8px', border: '1px solid #eedda6', color: '#8a6d3b' }}>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem' }}>Password Sementara Akun Anda:</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <input
+                    type="text"
+                    readOnly
+                    value={tempPassword}
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                      letterSpacing: '2px',
+                      padding: '8px 12px',
+                      background: '#fff',
+                      border: '1px solid #dcd5c0',
+                      borderRadius: '6px',
+                      color: '#2d6a4f',
+                      flex: 1,
+                      textAlign: 'center',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(tempPassword);
+                      alert('Password berhasil disalin!');
+                    }}
+                    style={{
+                      padding: '8px 14px',
+                      background: '#2d6a4f',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Salin
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('login');
+                    setPassword(tempPassword);
+                    setError('');
+                  }}
+                  style={{
+                    marginTop: '12px',
+                    width: '100%',
+                    padding: '10px',
+                    background: '#191919',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Gunakan Password Ini & Masuk ke Akun →
+                </button>
+              </div>
+            )}
             {verificationLink && (
               <div style={{ marginTop: '12px' }}>
                 <a

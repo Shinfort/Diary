@@ -74,3 +74,71 @@ export async function sendVerificationEmail(
     return { success: false, error: error?.message || 'SMTP delivery error' };
   }
 }
+
+export async function sendPasswordResetEmail(
+  toEmail: string,
+  newPassword: string
+): Promise<{ success: boolean; error?: string }> {
+  const smtpEmail = process.env.SMTP_EMAIL || '';
+  const smtpPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
+
+  if (!smtpEmail || !smtpPassword) {
+    return { success: false, error: 'Kredensial SMTP belum disetel di Environment Variables' };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: smtpEmail,
+        pass: smtpPassword,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fcfbf9; padding: 30px; border-radius: 12px; border: 1px solid #eceae6; color: #191919;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h1 style="color: #191919; font-size: 24px; margin-bottom: 6px; letter-spacing: -0.02em;">Personal Diary</h1>
+          <p style="color: #6b6b6b; font-size: 14px; margin: 0;">Pemulihan Password Akun</p>
+        </div>
+
+        <div style="background-color: #ffffff; padding: 28px; border-radius: 10px; border: 1px solid #eceae6; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+          <h2 style="font-size: 18px; margin-top: 0; color: #191919;">Password Baru Anda 🔑</h2>
+          <p style="color: #444; line-height: 1.6; font-size: 15px;">
+            Permintaan reset password telah diterima. Berikut adalah password sementara yang telah dibuat untuk akun Anda:
+          </p>
+
+          <div style="text-align: center; margin: 24px 0; background-color: #f4f3ef; padding: 16px; border-radius: 8px; border: 1px dashed #cfccc5;">
+            <code style="font-size: 22px; font-weight: bold; letter-spacing: 2px; color: #2d6a4f;">${newPassword}</code>
+          </div>
+
+          <p style="color: #666; font-size: 14px; line-height: 1.5;">
+            Silakan gunakan password di atas untuk masuk ke akun Anda. Setelah masuk, Anda dapat menggantinya dengan password baru yang Anda inginkan di menu Pengaturan.
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+          <p>Jika Anda tidak merasa meminta reset password, silakan amankan akun Anda segera.</p>
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"Personal Diary" <${smtpEmail}>`,
+      to: toEmail,
+      subject: 'Password Baru Akun Personal Diary Anda',
+      html: htmlContent,
+      text: `Password baru untuk akun Personal Diary Anda:\n\n${newPassword}\n\nSilakan gunakan password tersebut untuk login.`,
+    });
+
+    console.log('Password reset email sent to:', toEmail);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to send password reset email:', error?.message || error);
+    return { success: false, error: error?.message || 'SMTP delivery error' };
+  }
+}
+
