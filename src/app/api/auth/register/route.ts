@@ -5,7 +5,14 @@ import { createAuthToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Format data permintaan tidak valid' }, { status: 400 });
+    }
+
+    const { email, password, name } = body || {};
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email dan password wajib diisi' }, { status: 400 });
@@ -19,24 +26,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Format email tidak valid' }, { status: 400 });
     }
 
-    if (password.length < 6) {
+    if (String(password).length < 6) {
       return NextResponse.json({ error: 'Password minimal 6 karakter' }, { status: 400 });
     }
 
     // Check if user already exists
     const existing = await query('SELECT id FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     if (existing.rowCount && existing.rowCount > 0) {
-      return NextResponse.json({ error: 'Email sudah terdaftar. Silakan login.' }, { status: 409 });
+      return NextResponse.json({ error: 'Email sudah terdaftar. Silakan klik tab Masuk.' }, { status: 409 });
     }
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
     const displayName = (name && String(name).trim()) || cleanEmail.split('@')[0];
 
-    // Determine role: if first user, make admin, else user
-    const countRes = await query('SELECT COUNT(*) as count FROM users');
-    const isFirstUser = parseInt(countRes.rows[0]?.count || '0', 10) === 0;
-    const role = isFirstUser ? 'admin' : 'user';
+    // Determine role: if matches admin email or first user, give admin
+    const adminEmail = (process.env.SMTP_EMAIL || '').toLowerCase();
+    const isOwner = cleanEmail === adminEmail;
+    const role = isOwner ? 'admin' : 'user';
 
     const insertRes = await query(
       `INSERT INTO users (email, password_hash, name, role)
@@ -71,8 +78,9 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json({ error: 'Gagal melakukan registrasi' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Registration error details:', error);
+    const msg = error?.message || 'Gagal melakukan registrasi';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
