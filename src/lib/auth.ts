@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { query } from './db';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const JWT_SECRET = process.env.JWT_SECRET || 'diary-super-secret-production-jwt-key-2026-auth';
 
 export type AuthUser = {
   id: number;
