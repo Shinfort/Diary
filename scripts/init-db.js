@@ -2,19 +2,21 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 require('dotenv').config({ path: '.env.local' });
 
+const DEFAULT_DATABASE_URL =
+  'postgresql://neondb_owner:npg_whaHblM2KS4W@ep-misty-wildflower-ao71df7d-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+
+const connectionString = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '')
+  ? process.env.DATABASE_URL
+  : DEFAULT_DATABASE_URL;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: {
     rejectUnauthorized: false,
   },
 });
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
-    console.error('DATABASE_URL is not set. Please add it to .env.local');
-    process.exit(1);
-  }
-
   const client = await pool.connect();
 
   try {
@@ -28,11 +30,24 @@ async function main() {
         password_hash VARCHAR(255) NOT NULL,
         name VARCHAR(255) DEFAULT 'User',
         role VARCHAR(50) DEFAULT 'user',
+        is_verified BOOLEAN DEFAULT FALSE,
+        verification_token VARCHAR(255),
+        verification_token_expires TIMESTAMP WITH TIME ZONE,
+        storage_limit_bytes BIGINT DEFAULT 5368709120,
+        storage_used_bytes BIGINT DEFAULT 0,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT 'User';`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP WITH TIME ZONE;`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS storage_limit_bytes BIGINT DEFAULT 5368709120;`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS storage_used_bytes BIGINT DEFAULT 0;`);
+
+    // Ensure existing user is verified
+    await client.query(`UPDATE users SET is_verified = TRUE WHERE is_verified IS NULL OR is_verified = FALSE;`);
 
     // 2. Diary entries table
     await client.query(`
@@ -43,12 +58,14 @@ async function main() {
         mood VARCHAR(100) DEFAULT 'Happy',
         photos JSONB DEFAULT '[]',
         videos JSONB DEFAULT '[]',
+        media_size_bytes BIGINT DEFAULT 0,
         user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
     await client.query(`ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]';`);
     await client.query(`ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';`);
+    await client.query(`ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS media_size_bytes BIGINT DEFAULT 0;`);
     await client.query(`ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;`);
 
     // 3. Diary profile table
@@ -64,7 +81,7 @@ async function main() {
       );
     `);
 
-    // 4. Financial records table (Catatan Keuangan)
+    // 4. Financial records table
     await client.query(`
       CREATE TABLE IF NOT EXISTS financial_records (
         id SERIAL PRIMARY KEY,
@@ -79,32 +96,6 @@ async function main() {
     `);
 
     console.log('Tables and migrations updated successfully!');
-
-    // Seeding default profile if empty
-    const profileRes = await client.query('SELECT id FROM diary_profile LIMIT 1');
-    if (profileRes.rowCount === 0) {
-      console.log('Seeding default profile...');
-      await client.query(`
-        INSERT INTO diary_profile (name, pronouns, farm, status, avatar_url)
-        VALUES ($1, $2, $3, $4, $5)
-      `, ['Putri Utari', 'She/Her', 'Songbird Farm', 'Active', '']);
-      console.log('Default profile seeded!');
-    }
-
-    // Seeding default admin user if empty
-    const userRes = await client.query('SELECT id FROM users LIMIT 1');
-    if (userRes.rowCount === 0) {
-      console.log('Seeding default administrator...');
-      const defaultEmail = process.env.SMTP_EMAIL || 'admin@diary.com';
-      const defaultPassword = 'adminpassword123';
-      const passwordHash = await bcrypt.hash(defaultPassword, 10);
-      
-      await client.query(`
-        INSERT INTO users (email, password_hash, name, role)
-        VALUES ($1, $2, $3, $4)
-      `, [defaultEmail, passwordHash, 'Admin Diary', 'admin']);
-      console.log('DEFAULT ADMINISTRATOR SEEDED:', defaultEmail);
-    }
 
   } catch (err) {
     console.error('Error during database initialization:', err);

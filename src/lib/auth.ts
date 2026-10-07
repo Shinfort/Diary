@@ -9,6 +9,8 @@ export type AuthUser = {
   email: string;
   name: string;
   role: string;
+  storage_limit_bytes: number;
+  storage_used_bytes: number;
 };
 
 export async function verifyAuth(): Promise<number | null> {
@@ -36,8 +38,15 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       return null;
     }
 
-    // Fetch fresh user data from DB
-    const res = await query('SELECT id, email, name, role FROM users WHERE id = $1', [decoded.userId]);
+    // Fetch fresh user data from DB including storage
+    const res = await query(
+      `SELECT id, email, name, role, 
+              COALESCE(storage_limit_bytes, 5368709120) as storage_limit_bytes, 
+              COALESCE(storage_used_bytes, 0) as storage_used_bytes 
+       FROM users WHERE id = $1`, 
+      [decoded.userId]
+    );
+
     if (res.rowCount === 0) {
       return null;
     }
@@ -48,6 +57,8 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       email: row.email,
       name: row.name || 'User',
       role: row.role || 'user',
+      storage_limit_bytes: parseInt(row.storage_limit_bytes, 10) || 5368709120,
+      storage_used_bytes: parseInt(row.storage_used_bytes, 10) || 0,
     };
   } catch (error) {
     console.error('Auth verification notice:', error);

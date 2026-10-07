@@ -8,13 +8,16 @@ export async function POST(req: Request) {
     const { email, password } = await req.json();
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Email dan password wajib diisi' }, { status: 400 });
     }
 
     const cleanEmail = String(email).trim().toLowerCase();
 
     // Find user
-    const res = await query('SELECT id, email, name, role, password_hash FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    const res = await query(
+      'SELECT id, email, name, role, password_hash, is_verified FROM users WHERE LOWER(email) = $1', 
+      [cleanEmail]
+    );
     if (res.rowCount === 0) {
       return NextResponse.json({ error: 'Email atau password salah' }, { status: 401 });
     }
@@ -25,6 +28,14 @@ export async function POST(req: Request) {
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return NextResponse.json({ error: 'Email atau password salah' }, { status: 401 });
+    }
+
+    // Check verification status
+    if (user.is_verified === false) {
+      return NextResponse.json({
+        error: 'Akun Anda belum aktif. Silakan buka link verifikasi yang dikirimkan ke email Anda untuk mengaktifkan akun dan kuota 5GB Anda.',
+        unverified: true,
+      }, { status: 403 });
     }
 
     // Generate JWT

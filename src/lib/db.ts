@@ -35,10 +35,20 @@ export async function ensureSchema() {
         password_hash VARCHAR(255) NOT NULL,
         name VARCHAR(255) DEFAULT 'User',
         role VARCHAR(50) DEFAULT 'user',
+        is_verified BOOLEAN DEFAULT FALSE,
+        verification_token VARCHAR(255),
+        verification_token_expires TIMESTAMP WITH TIME ZONE,
+        storage_limit_bytes BIGINT DEFAULT 5368709120,
+        storage_used_bytes BIGINT DEFAULT 0,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
       ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255) DEFAULT 'User';
       ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS storage_limit_bytes BIGINT DEFAULT 5368709120;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS storage_used_bytes BIGINT DEFAULT 0;
 
       CREATE TABLE IF NOT EXISTS diary_entries (
         id SERIAL PRIMARY KEY,
@@ -47,11 +57,13 @@ export async function ensureSchema() {
         mood VARCHAR(100) DEFAULT 'Happy',
         photos JSONB DEFAULT '[]',
         videos JSONB DEFAULT '[]',
+        media_size_bytes BIGINT DEFAULT 0,
         user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
       ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]';
       ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]';
+      ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS media_size_bytes BIGINT DEFAULT 0;
       ALTER TABLE diary_entries ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
 
       CREATE TABLE IF NOT EXISTS diary_profile (
