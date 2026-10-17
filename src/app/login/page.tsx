@@ -3,17 +3,15 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Lock, ShieldCheck } from 'lucide-react';
 import styles from './login.module.css';
 
 export default function Login() {
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>('login');
-  const [name, setName] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [verificationLink, setVerificationLink] = useState('');
   const [tempPassword, setTempPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -22,45 +20,11 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setMessage('');
-    setVerificationLink('');
     setTempPassword('');
     setLoading(true);
 
     try {
-      if (authMode === 'register') {
-        if (password.length < 6) {
-          setError('Password minimal 6 karakter');
-          setLoading(false);
-          return;
-        }
-
-        if (password !== confirmPassword) {
-          setError('Konfirmasi password tidak cocok');
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          if (data.needVerification) {
-            setMessage(data.message || 'Link verifikasi telah dikirimkan ke email Anda.');
-            if (data.verificationUrl) {
-              setVerificationLink(data.verificationUrl);
-            }
-          } else {
-            router.push('/admin');
-            router.refresh();
-          }
-        } else {
-          setError(data.error || 'Gagal mendaftar');
-        }
-      } else if (authMode === 'login') {
+      if (authMode === 'login') {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -101,50 +65,29 @@ export default function Login() {
   return (
     <div className={styles.authContainer}>
       <form onSubmit={handleAuth} className={styles.authForm}>
-        {/* Auth Mode Tabs */}
-        {authMode !== 'forgot' && (
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '8px' }}>
-            <button
-              type="button"
-              onClick={() => { setAuthMode('login'); setError(''); setMessage(''); setVerificationLink(''); }}
-              style={{
-                flex: 1,
-                padding: '10px',
-                fontSize: '0.95rem',
-                fontWeight: authMode === 'login' ? '700' : '500',
-                color: authMode === 'login' ? 'var(--primary)' : 'var(--text-muted)',
-                borderBottom: authMode === 'login' ? '2px solid var(--primary)' : 'none',
-              }}
-            >
-              Masuk
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAuthMode('register'); setError(''); setMessage(''); setVerificationLink(''); }}
-              style={{
-                flex: 1,
-                padding: '10px',
-                fontSize: '0.95rem',
-                fontWeight: authMode === 'register' ? '700' : '500',
-                color: authMode === 'register' ? 'var(--primary)' : 'var(--text-muted)',
-                borderBottom: authMode === 'register' ? '2px solid var(--primary)' : 'none',
-              }}
-            >
-              Daftar Akun
-            </button>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--accent-light, #e8f5e9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--accent, #2d6a4f)',
+          }}>
+            {authMode === 'login' ? <Lock size={22} /> : <ShieldCheck size={22} />}
           </div>
-        )}
+        </div>
 
-        <h2>
-          {authMode === 'register' && 'Buat Akun Diary'}
-          {authMode === 'login' && 'Masuk ke Akun'}
-          {authMode === 'forgot' && 'Reset Password'}
+        <h2 style={{ textAlign: 'center' }}>
+          {authMode === 'login' ? 'Login Administrator' : 'Pemulihan Sandi Admin'}
         </h2>
 
-        <p className={styles.authDescription}>
-          {authMode === 'register' && 'Daftar untuk mengaktifkan akun personal dan kuota penyimpanan 5.0 GB.'}
-          {authMode === 'login' && 'Masukkan email dan password untuk mengakses catatan Anda.'}
-          {authMode === 'forgot' && 'Masukkan alamat email Anda untuk menerima password sementara.'}
+        <p className={styles.authDescription} style={{ textAlign: 'center' }}>
+          {authMode === 'login'
+            ? 'Akses masuk khusus pengelola jurnal. Pengunjung umum dapat membaca seluruh catatan di beranda tanpa perlu login.'
+            : 'Masukkan alamat email administrator terdaftar untuk menerima password sementara.'}
         </p>
 
         {error && <p className={styles.error}>{error}</p>}
@@ -218,73 +161,28 @@ export default function Login() {
                 </button>
               </div>
             )}
-            {verificationLink && (
-              <div style={{ marginTop: '12px' }}>
-                <a
-                  href={verificationLink}
-                  style={{
-                    display: 'inline-block',
-                    backgroundColor: 'var(--accent)',
-                    color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    fontWeight: '600',
-                    fontSize: '0.85rem',
-                    textDecoration: 'none',
-                  }}
-                >
-                  ✓ Klik untuk Verifikasi Akun Sekarang (5GB)
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-
-        {authMode === 'register' && (
-          <div className={styles.inputGroup}>
-            <label>Nama Lengkap / Panggilan</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Contoh: Putri Utari"
-              required
-            />
           </div>
         )}
 
         <div className={styles.inputGroup}>
-          <label>Alamat Email</label>
+          <label>Email Administrator</label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="nama@email.com"
+            placeholder="admin@email.com"
             required
           />
         </div>
 
-        {authMode !== 'forgot' && (
+        {authMode === 'login' && (
           <div className={styles.inputGroup}>
-            <label>Password</label>
+            <label>Password Admin</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Minimal 6 karakter"
-              required
-            />
-          </div>
-        )}
-
-        {authMode === 'register' && (
-          <div className={styles.inputGroup}>
-            <label>Konfirmasi Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="Ulangi password di atas"
+              placeholder="Masukkan password admin"
               required
             />
           </div>
@@ -292,44 +190,29 @@ export default function Login() {
 
         <button type="submit" disabled={loading} className={styles.btn}>
           {loading ? 'Memproses...' : (
-            authMode === 'register' ? 'Daftar & Kirim Link Verifikasi' :
-            authMode === 'login' ? 'Masuk ke Akun' : 'Kirim Email Pemulihan'
+            authMode === 'login' ? 'Masuk sebagai Admin' : 'Kirim Email Pemulihan'
           )}
         </button>
 
         {/* Bottom Switchers */}
         <div className={styles.toggleText}>
-          {authMode === 'login' && (
-            <p style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-              <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('forgot'); setError(''); setMessage(''); setVerificationLink(''); }}>
-                Lupa Password?
-              </a>
-              <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('register'); setError(''); setMessage(''); setVerificationLink(''); }}>
-                Belum punya akun? Daftar
+          {authMode === 'login' ? (
+            <p style={{ textAlign: 'center', marginTop: '6px' }}>
+              <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('forgot'); setError(''); setMessage(''); }}>
+                Lupa Password Admin?
               </a>
             </p>
-          )}
-
-          {authMode === 'register' && (
-            <p>
-              Sudah punya akun?{' '}
-              <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('login'); setError(''); setMessage(''); setVerificationLink(''); }}>
-                Masuk di sini
-              </a>
-            </p>
-          )}
-
-          {authMode === 'forgot' && (
-            <p>
-              <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('login'); setError(''); setMessage(''); setVerificationLink(''); }}>
-                ← Kembali ke Halaman Masuk
+          ) : (
+            <p style={{ textAlign: 'center' }}>
+              <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('login'); setError(''); setMessage(''); }}>
+                ← Kembali ke Halaman Masuk Admin
               </a>
             </p>
           )}
         </div>
 
         <Link href="/" className={styles.backHomeLink}>
-          ← Kembali ke Halaman Utama
+          ← Kembali ke Halaman Utama (Mode Baca)
         </Link>
       </form>
     </div>

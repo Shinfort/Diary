@@ -6,7 +6,7 @@ import DiaryBook from '@/components/DiaryBook';
 import EntriesTab from '@/components/tabs/EntriesTab';
 import ThemeToggle from '@/components/ThemeToggle';
 import KuromiMikuBanner from '@/components/KuromiMikuBanner';
-import { BookOpen, LogIn, LayoutDashboard } from 'lucide-react';
+import { BookOpen, Lock, LayoutDashboard } from 'lucide-react';
 
 export default function Home() {
   const [user, setUser] = useState<{ id: number; name: string; email: string } | null>(null);
@@ -107,8 +107,11 @@ export default function Home() {
                 fontWeight: '600',
               }}
             >
-              <LogIn size={16} /> Masuk / Daftar Akun
+              <Lock size={15} /> Masuk sebagai Admin
             </Link>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.4' }}>
+              Mode Baca &bull; Anonim dapat langsung melihat catatan
+            </span>
           </div>
         )}
       </div>

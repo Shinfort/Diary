@@ -7,12 +7,12 @@ export default function RegisterRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/login');
+    router.replace('/');
   }, [router]);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <p>Membuka pendaftaran akun...</p>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      <p style={{ color: 'var(--text-muted, #666)' }}>Pendaftaran publik ditutup. Mengalihkan ke beranda...</p>
     </div>
   );
 }

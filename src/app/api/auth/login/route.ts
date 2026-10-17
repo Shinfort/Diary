@@ -38,6 +38,13 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
+    // Only allow admin accounts to log in
+    if (user.role !== 'admin') {
+      return NextResponse.json({
+        error: 'Akses ditolak. Halaman login ini hanya dikhususkan untuk Administrator/pemilik jurnal.',
+      }, { status: 403 });
+    }
+
     // Generate JWT
     const token = createAuthToken(user);
 
