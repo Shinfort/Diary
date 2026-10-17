@@ -6,6 +6,7 @@ import DiaryBook from '@/components/DiaryBook';
 import EntriesTab from '@/components/tabs/EntriesTab';
 import ThemeToggle from '@/components/ThemeToggle';
 import KuromiMikuBanner from '@/components/KuromiMikuBanner';
+import FaqSection from '@/components/FaqSection';
 import { BookOpen, Lock, LayoutDashboard } from 'lucide-react';
 
 export default function Home() {
@@ -103,7 +104,8 @@ export default function Home() {
       <DiaryBook sidebar={sidebar}>
         <EntriesTab isAdmin={Boolean(user)} />
       </DiaryBook>
-      <footer style={{ marginTop: '24px', marginBottom: '32px', textAlign: 'center', maxWidth: '640px', padding: '0 16px' }}>
+      <FaqSection />
+      <footer style={{ marginTop: '12px', marginBottom: '32px', textAlign: 'center', maxWidth: '640px', padding: '0 16px' }}>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
           <strong>Shine Journal</strong> &bull; Buku Catatan Harian Pribadi Digital &bull; Simpan kenangan, pantau mood harian, dan kelola cerita Anda dengan aman.
         </p>
