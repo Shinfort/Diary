@@ -65,9 +65,9 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Auth action section */}
-      <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '4px' }}>
-        {user ? (
+      {/* Auth action section (only visible when admin is logged in) */}
+      {user && (
+        <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '4px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               Halo, <strong>{user.name}</strong>
@@ -90,31 +90,8 @@ export default function Home() {
               <LayoutDashboard size={16} /> Buka Dashboard
             </Link>
           </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <Link
-              href="/login"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '10px 14px',
-                backgroundColor: 'var(--primary)',
-                color: 'white',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-              }}
-            >
-              <Lock size={15} /> Masuk sebagai Admin
-            </Link>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.4' }}>
-              Mode Baca &bull; Anonim dapat langsung melihat catatan
-            </span>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Theme Switcher */}
       <ThemeToggle variant="sidebar" />

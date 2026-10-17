@@ -4,8 +4,60 @@ import crypto from 'crypto';
 import { query } from '@/lib/db';
 import { sendPasswordResetEmail } from '@/lib/mailer';
 
+const ALLOWED_ADMIN_EMAIL = 'p.utari087@gmail.com'.toLowerCase();
+
+const resetAttempts = new Map<string, { count: number; firstAttempt: number; lockedUntil?: number }>();
+
+function checkResetRateLimit(clientIp: string): { allowed: boolean; waitMinutes?: number } {
+  const now = Date.now();
+  const entry = resetAttempts.get(clientIp);
+
+  if (!entry) return { allowed: true };
+
+  if (entry.lockedUntil && now < entry.lockedUntil) {
+    const waitMinutes = Math.ceil((entry.lockedUntil - now) / (60 * 1000));
+    return { allowed: false, waitMinutes };
+  }
+
+  if (now - entry.firstAttempt > 30 * 60 * 1000) {
+    resetAttempts.delete(clientIp);
+    return { allowed: true };
+  }
+
+  // Max 3 reset requests per 30 minutes
+  if (entry.count >= 3) {
+    entry.lockedUntil = now + 30 * 60 * 1000;
+    return { allowed: false, waitMinutes: 30 };
+  }
+
+  return { allowed: true };
+}
+
+function recordResetAttempt(clientIp: string) {
+  const now = Date.now();
+  const entry = resetAttempts.get(clientIp) || { count: 0, firstAttempt: now };
+  entry.count += 1;
+  if (entry.count >= 3) {
+    entry.lockedUntil = now + 30 * 60 * 1000;
+  }
+  resetAttempts.set(clientIp, entry);
+}
+
 export async function POST(req: Request) {
   try {
+    const forwarded = req.headers.get('x-forwarded-for');
+    const clientIp = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1';
+
+    // Rate limiting
+    const rateCheck = checkResetRateLimit(clientIp);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({
+        error: `Terlalu banyak permintaan pemulihan kata sandi. Silakan tunggu ${rateCheck.waitMinutes} menit.`,
+      }, { status: 429 });
+    }
+
+    recordResetAttempt(clientIp);
+
     let body;
     try {
       body = await req.json();
@@ -21,40 +73,54 @@ export async function POST(req: Request) {
 
     const cleanEmail = String(email).trim().toLowerCase();
 
-    // Check if user exists
-    const userCheck = await query('SELECT id, name FROM users WHERE LOWER(email) = $1', [cleanEmail]);
-    if (userCheck.rowCount === 0) {
-      return NextResponse.json({ error: 'Email belum terdaftar di Diary' }, { status: 404 });
+    // Strict Authorization: Only allow admin email to receive reset instructions
+    if (cleanEmail !== ALLOWED_ADMIN_EMAIL) {
+      // Return generic message to prevent user enumeration
+      return NextResponse.json({
+        message: 'Jika email terdaftar sebagai administrator, instruksi reset sandi telah dikirimkan ke kotak masuk Anda.',
+        emailSent: true,
+      }, { status: 200 });
     }
 
-    // Generate a secure, readable new temporary password (8 characters: uppercase, lowercase, numbers)
-    const newPassword = crypto.randomBytes(4).toString('hex').toUpperCase(); // e.g. A1B2C3D4
+    // Check if user exists and is admin
+    const userCheck = await query('SELECT id, name, role FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    if (userCheck.rowCount === 0 || userCheck.rows[0].role !== 'admin') {
+      return NextResponse.json({
+        message: 'Jika email terdaftar sebagai administrator, instruksi reset sandi telah dikirimkan ke kotak masuk Anda.',
+        emailSent: true,
+      }, { status: 200 });
+    }
+
+    // Generate a cryptographically strong 12-char random alphanumeric password
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+    let newPassword = '';
+    for (let i = 0; i < 12; i++) {
+      newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
     // Update password in database
     await query('UPDATE users SET password_hash = $1 WHERE LOWER(email) = $2', [passwordHash, cleanEmail]);
 
-    // Send email using mailer
+    // Send email using mailer directly to the admin's inbox
     const mailResult = await sendPasswordResetEmail(cleanEmail, newPassword);
 
     if (mailResult.success) {
       return NextResponse.json({
-        message: 'Password sementara berhasil dikirim ke email Anda! Silakan periksa kotak masuk atau spam.',
+        message: 'Password sementara berhasil dikirim ke email administrator Anda! Silakan periksa kotak masuk atau spam.',
         emailSent: true,
       }, { status: 200 });
     } else {
-      // If SMTP fails, provide the temporary password directly on screen so the user is never locked out
+      console.error('SMTP error during password reset:', mailResult.error);
       return NextResponse.json({
-        message: 'Pengiriman email gagal karena izin SMTP Google ditolak / belum aktif. Namun password akun Anda telah berhasil direset menjadi password sementara di bawah ini:',
-        emailSent: false,
-        tempPassword: newPassword,
-      }, { status: 200 });
+        error: 'Gagal mengirim email reset kata sandi. Pastikan izin SMTP Gmail aktif atau hubungi administrator.',
+      }, { status: 500 });
     }
   } catch (error: any) {
     console.error('Forgot password error:', error);
     return NextResponse.json({
-      error: error?.message || 'Gagal memproses reset password. Silakan coba lagi.',
+      error: 'Gagal memproses reset password. Silakan coba lagi beberapa saat lagi.',
     }, { status: 500 });
   }
 }
-

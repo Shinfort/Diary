@@ -25,11 +25,14 @@ export default function AdminDashboard() {
       try {
         const res = await fetch('/api/auth/me');
         const data = await res.json();
-        if (res.ok && data.user) {
+        if (res.ok && data.user && data.user.role === 'admin') {
           setUser(data.user);
+        } else {
+          window.location.href = '/login';
         }
       } catch (err) {
         console.error('Failed to load user', err);
+        window.location.href = '/login';
       }
     }
     loadUser();
