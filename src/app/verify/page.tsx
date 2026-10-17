@@ -127,7 +127,7 @@ function VerifyContent() {
             </div>
 
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-              Selamat datang di Personal Diary! Anda sekarang bebas menyimpan tulisan rahasia, galeri foto, video, dan pembukuan keuangan.
+              Selamat datang di Personal Diary! Anda sekarang bebas menyimpan tulisan rahasia serta galeri foto dan video.
             </p>
 
             <p style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: '600' }}>

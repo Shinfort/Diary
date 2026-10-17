@@ -143,7 +143,7 @@ export default function Login() {
 
         <p className={styles.authDescription}>
           {authMode === 'register' && 'Daftar untuk mengaktifkan akun personal dan kuota penyimpanan 5.0 GB.'}
-          {authMode === 'login' && 'Masukkan email dan password untuk mengakses catatan dan keuangan Anda.'}
+          {authMode === 'login' && 'Masukkan email dan password untuk mengakses catatan Anda.'}
           {authMode === 'forgot' && 'Masukkan alamat email Anda untuk menerima password sementara.'}
         </p>
 

@@ -29,7 +29,7 @@ export async function sendVerificationEmail(
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fcfbf9; padding: 30px; border-radius: 12px; border: 1px solid #eceae6; color: #191919;">
         <div style="text-align: center; margin-bottom: 24px;">
           <h1 style="color: #191919; font-size: 24px; margin-bottom: 6px; letter-spacing: -0.02em;">Personal Diary</h1>
-          <p style="color: #6b6b6b; font-size: 14px; margin: 0;">Ruang Aman untuk Catatan, Kenangan & Keuangan Anda</p>
+          <p style="color: #6b6b6b; font-size: 14px; margin: 0;">Ruang Aman untuk Catatan & Kenangan Anda</p>
         </div>
 
         <div style="background-color: #ffffff; padding: 28px; border-radius: 10px; border: 1px solid #eceae6; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">

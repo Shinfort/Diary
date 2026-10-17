@@ -4,13 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DiaryBook from '@/components/DiaryBook';
 import EntriesTab from '@/components/tabs/EntriesTab';
-import FinanceTab from '@/components/tabs/FinanceTab';
 import ThemeToggle from '@/components/ThemeToggle';
 import KuromiMikuBanner from '@/components/KuromiMikuBanner';
-import { BookOpen, Wallet, LogIn, LayoutDashboard } from 'lucide-react';
+import { BookOpen, LogIn, LayoutDashboard } from 'lucide-react';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'entries' | 'finance'>('entries');
   const [user, setUser] = useState<{ id: number; name: string; email: string } | null>(null);
 
   useEffect(() => {
@@ -34,21 +32,20 @@ export default function Home() {
         <BookOpen size={24} />
       </div>
       <div>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--foreground)', fontFamily: 'var(--font-reading)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
-          Personal Diary
-        </h2>
+        <h1 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--foreground)', fontFamily: 'var(--font-reading)', letterSpacing: '-0.02em', marginBottom: '8px', lineHeight: '1.3' }}>
+          Shine Journal &mdash; Personal Diary
+        </h1>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-          Ruang tenang untuk catatan harian, kenangan foto & video, serta pembukuan keuangan.
+          Ruang tenang untuk catatan harian, linimasa cerita, serta galeri foto &amp; video memori.
         </p>
       </div>
 
       {/* Kuromi & Miku Mascot Banner (visible when theme is active) */}
       <KuromiMikuBanner />
 
-      {/* Navigation Tabs */}
+      {/* Navigation */}
       <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <button
-          onClick={() => setActiveTab('entries')}
           style={{
             width: '100%',
             display: 'flex',
@@ -56,33 +53,15 @@ export default function Home() {
             gap: '10px',
             padding: '10px 14px',
             borderRadius: '8px',
-            color: activeTab === 'entries' ? 'white' : 'var(--text-muted)',
-            backgroundColor: activeTab === 'entries' ? 'var(--primary)' : 'transparent',
+            color: 'white',
+            backgroundColor: 'var(--primary)',
             fontWeight: '600',
             fontSize: '0.9rem',
             textAlign: 'left',
+            border: 'none',
           }}
         >
           <BookOpen size={16} /> Linimasa Catatan
-        </button>
-
-        <button
-          onClick={() => setActiveTab('finance')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            color: activeTab === 'finance' ? 'white' : 'var(--text-muted)',
-            backgroundColor: activeTab === 'finance' ? 'var(--primary)' : 'transparent',
-            fontWeight: '600',
-            fontSize: '0.9rem',
-            textAlign: 'left',
-          }}
-        >
-          <Wallet size={16} /> Catatan Keuangan
         </button>
       </div>
 
@@ -142,9 +121,13 @@ export default function Home() {
   return (
     <main style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px' }}>
       <DiaryBook sidebar={sidebar}>
-        {activeTab === 'entries' && <EntriesTab isAdmin={Boolean(user)} />}
-        {activeTab === 'finance' && <FinanceTab />}
+        <EntriesTab isAdmin={Boolean(user)} />
       </DiaryBook>
+      <footer style={{ marginTop: '24px', marginBottom: '32px', textAlign: 'center', maxWidth: '640px', padding: '0 16px' }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          <strong>Shine Journal</strong> &bull; Buku Catatan Harian Pribadi Digital &bull; Simpan kenangan, pantau mood harian, dan kelola cerita Anda dengan aman.
+        </p>
+      </footer>
     </main>
   );
 }

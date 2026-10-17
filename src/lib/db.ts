@@ -74,17 +74,6 @@ export async function ensureSchema() {
         avatar_url VARCHAR(500),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
-
-      CREATE TABLE IF NOT EXISTS financial_records (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        type VARCHAR(20) NOT NULL,
-        amount NUMERIC(15, 2) NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        description TEXT,
-        date DATE NOT NULL DEFAULT CURRENT_DATE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
     `);
   } catch (error) {
     console.error('Database schema check notice:', error);

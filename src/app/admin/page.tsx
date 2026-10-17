@@ -5,13 +5,12 @@ import DiaryBook from '@/components/DiaryBook';
 import EntriesTab from '@/components/tabs/EntriesTab';
 import WriteTab from '@/components/tabs/WriteTab';
 import SettingsTab from '@/components/tabs/SettingsTab';
-import FinanceTab from '@/components/tabs/FinanceTab';
 import ThemeToggle from '@/components/ThemeToggle';
 import KuromiMikuBanner from '@/components/KuromiMikuBanner';
-import { BookOpen, PenTool, Settings, Wallet, UserCheck, Shield, HardDrive } from 'lucide-react';
+import { BookOpen, PenTool, Settings, UserCheck, Shield, HardDrive } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'entries' | 'write' | 'finance' | 'settings'>('entries');
+  const [activeTab, setActiveTab] = useState<'entries' | 'write' | 'settings'>('entries');
   const [user, setUser] = useState<{ 
     id: number; 
     name: string; 
@@ -58,7 +57,7 @@ export default function AdminDashboard() {
             {user?.name || 'Dashboard'}
           </h2>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            {user?.email || 'Jurnal & Keuangan'}
+            {user?.email || 'Jurnal Pribadi'}
           </p>
         </div>
       </div>
@@ -105,26 +104,6 @@ export default function AdminDashboard() {
           }}
         >
           <PenTool size={16} /> Tulis Catatan
-        </button>
-
-        <button 
-          onClick={() => setActiveTab('finance')}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            color: activeTab === 'finance' ? 'white' : 'var(--text-muted)',
-            backgroundColor: activeTab === 'finance' ? 'var(--primary)' : 'transparent',
-            fontWeight: '600',
-            fontSize: '0.9rem',
-            textAlign: 'left',
-            border: 'none',
-          }}
-        >
-          <Wallet size={16} /> Catatan Keuangan
         </button>
 
         <button 
@@ -181,7 +160,6 @@ export default function AdminDashboard() {
             }} 
           />
         )}
-        {activeTab === 'finance' && <FinanceTab />}
         {activeTab === 'settings' && <SettingsTab isAdmin={true} />}
       </DiaryBook>
     </main>
